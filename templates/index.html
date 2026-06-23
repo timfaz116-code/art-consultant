@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-консультант по искусству</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+        h1 { text-align: center; color: #c0392b; }
+        #chat { border: 1px solid #ccc; border-radius: 8px; padding: 16px; height: 400px; overflow-y: auto; margin-bottom: 16px; background: #fff; }
+        .message { margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; }
+        .user { background: #d4e6f1; text-align: right; }
+        .bot { background: #f0f0f0; }
+        #input-area { display: flex; gap: 8px; }
+        #question { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #fff; color: #333; }
+        button { padding: 10px 20px; background: #c0392b; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+        button:hover { background: #a93226; }
+    </style>
+</head>
+<body>
+    <h1>🎨 AI-консультант по искусству</h1>
+    <div id="chat"></div>
+    <div id="input-area">
+        <input type="text" id="question" placeholder="Задайте вопрос об искусстве...">
+        <button onclick="send()">Отправить</button>
+    </div>
+
+    <script>
+        async function send() {
+            const input = document.getElementById('question');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<div class="message user">${question}</div>`;
+            input.value = '';
+
+            const resp = await fetch('/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({question})
+            });
+            const data = await resp.json();
+            chat.innerHTML += `<div class="message bot">${data.answer}</div>`;
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        document.getElementById('question').addEventListener('keydown', e => {
+            if (e.key === 'Enter') send();
+        });
+    </script>
+</body>
+</html>
