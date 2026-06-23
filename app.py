@@ -26,12 +26,12 @@ def ask():
 
     try:
         response = client.chat.completions.create(
-            model='openai/gpt-4',
+            model='qwen/qwen3-next-80b-a3b-instruct:free',
             messages=[
                 {'role': 'system', 'content': SYSTEM_PROMPT},
                 {'role': 'user', 'content': question}
             ],
-            max_tokens=500,
+            max_tokens=400,
             temperature=0.7
         )
         answer = response.choices[0].message.content
