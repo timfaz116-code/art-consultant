@@ -36,7 +36,7 @@ def ask():
                     {'role': 'system', 'content': SYSTEM_PROMPT},
                     {'role': 'user', 'content': question}
                 ],
-                max_tokens=400,
+                max_tokens=1500,
                 temperature=0.7,
                 timeout=60
             )
