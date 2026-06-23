@@ -12,7 +12,8 @@ with open('prompt.txt', 'r', encoding='utf-8') as f:
 
 client = OpenAI(
     api_key=os.getenv('OPENROUTER_API_KEY'),
-    base_url='https://openrouter.ai/api/v1'
+    base_url='https://openrouter.ai/api/v1',
+    max_retries=0
 )
 
 @app.route('/')
@@ -26,7 +27,7 @@ def ask():
 
     try:
         response = client.chat.completions.create(
-            model='qwen/qwen3-next-80b-a3b-instruct:free',
+            model='meta-llama/llama-3.3-70b-instruct:free',
             messages=[
                 {'role': 'system', 'content': SYSTEM_PROMPT},
                 {'role': 'user', 'content': question}
