@@ -25,20 +25,29 @@ def ask():
     data = request.json
     question = data.get('question', '')
 
-    try:
-        response = client.chat.completions.create(
-            model='meta-llama/llama-3.3-70b-instruct:free',
-            messages=[
-                {'role': 'system', 'content': SYSTEM_PROMPT},
-                {'role': 'user', 'content': question}
-            ],
-            max_tokens=400,
-            temperature=0.7
-        )
-        answer = response.choices[0].message.content
-        return jsonify({'answer': answer})
-    except Exception as e:
-        return jsonify({'answer': 'Ошибка при обработке запроса: ' + str(e)}), 500
+    max_retries = 3
+    retry_delay = 5
+
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model='openrouter/free',
+                messages=[
+                    {'role': 'system', 'content': SYSTEM_PROMPT},
+                    {'role': 'user', 'content': question}
+                ],
+                max_tokens=400,
+                temperature=0.7,
+                timeout=60
+            )
+            answer = response.choices[0].message.content
+            return jsonify({'answer': answer})
+        except Exception as e:
+            if '429' in str(e) and attempt < max_retries - 1:
+                import time
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            return jsonify({'answer': 'Слишком много запросов к бесплатной модели. Попробуйте через минуту. Ошибка: ' + str(e)}), 429
 
 if __name__ == '__main__':
     app.run(debug=True)
