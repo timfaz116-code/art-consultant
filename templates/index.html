@@ -15,6 +15,10 @@
         #question { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #fff; color: #333; }
         button { padding: 10px 20px; background: #c0392b; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
         button:hover { background: #a93226; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .loading { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: #888; font-style: italic; }
+        .spinner { width: 16px; height: 16px; border: 2px solid #ccc; border-top-color: #c0392b; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -26,22 +30,40 @@
     </div>
 
     <script>
+        const loadingId = 'loading-indicator';
+
         async function send() {
             const input = document.getElementById('question');
+            const btn = document.querySelector('button');
             const question = input.value.trim();
-            if (!question) return;
+            if (!question || btn.disabled) return;
 
             const chat = document.getElementById('chat');
             chat.innerHTML += `<div class="message user">${question}</div>`;
             input.value = '';
+            input.disabled = true;
+            btn.disabled = true;
 
-            const resp = await fetch('/ask', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({question})
-            });
-            const data = await resp.json();
-            chat.innerHTML += `<div class="message bot">${data.answer}</div>`;
+            chat.innerHTML += `<div class="loading" id="${loadingId}"><div class="spinner"></div>Думаю...</div>`;
+            chat.scrollTop = chat.scrollHeight;
+
+            try {
+                const resp = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question})
+                });
+                const data = await resp.json();
+                document.getElementById(loadingId)?.remove();
+                chat.innerHTML += `<div class="message bot">${data.answer}</div>`;
+            } catch {
+                document.getElementById(loadingId)?.remove();
+                chat.innerHTML += `<div class="message bot">Ошибка соединения</div>`;
+            }
+
+            input.disabled = false;
+            btn.disabled = false;
+            input.focus();
             chat.scrollTop = chat.scrollHeight;
         }
 
