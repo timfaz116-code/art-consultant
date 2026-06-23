@@ -36,11 +36,13 @@ def ask():
                     {'role': 'system', 'content': SYSTEM_PROMPT},
                     {'role': 'user', 'content': question}
                 ],
-                max_tokens=1500,
+                max_tokens=300,
                 temperature=0.7,
                 timeout=60
             )
             answer = response.choices[0].message.content
+            if response.choices[0].finish_reason == 'length':
+                answer += '\n\n[Ответ обрезан из-за ограничения длины. Задайте уточняющий вопрос.]'
             return jsonify({'answer': answer})
         except Exception as e:
             if '429' in str(e) and attempt < max_retries - 1:
